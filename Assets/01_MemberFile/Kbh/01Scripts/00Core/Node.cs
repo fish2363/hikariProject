@@ -4,99 +4,245 @@ using System.Collections.Generic;
 using UnityEngine;
 
 
-public interface INode
-{
-   void Receive<T>(T child, bool activeSelf)
-      where T : class, INode;
-   void SetActive(bool activeSelf);
-   Transform GetTrm();
 
-   event Action OnUpdateEvt;
+public enum NodeSaveType
+{
+   None,
+   Register,
+   Pool
 }
 
-public abstract class Empty : INode
+public interface IOwnable
 {
-   public Transform GetTrm() => null;
-   public abstract void SetActive(bool activeSelf);
-   public abstract void Receive<T>(T child, bool activeSelf) where T : class, INode;
-   public event Action OnUpdateEvt = null;
+   Node Parent { get; set; }
+   void SetParent(Node parent);
 }
 
+public class NULL { }
 
-public abstract class Node<T> : MonoBehaviour, INode
-   where T : class, INode
+public abstract class NodeSendData
 {
-   protected T _parent = null;
-   protected bool _isActive = false;
-
-   public event Action OnUpdateEvt = null;
-   
-   protected virtual void Initialize()
+   public NodeSendData(Node sender)
    {
-      if (typeof(T) == typeof(Empty)) return;
-      if(TryFindParentNode(out var parent))
-      {
-         _parent = parent;
-         SetActive(true);
-      }
-      else
-      {
-         Debug.LogError($@"ERROR :: There is no parent node 
-for [{gameObject.name}]. Please Check. ");
-      }
+      _sender = sender;
    }
 
-   public Transform GetTrm() => transform;
+   private Node _sender;
+   public Node Sender => _sender;
+}
 
-   private bool TryFindParentNode(out T result)
+public abstract class NodeSendObject : ScriptableObject
+{
+   public virtual void Initialize(Node sender)
    {
-      result = null;
+      _sender = sender;
+   }
 
-      Transform root = transform.root;
-      Transform trm = transform;
+   private Node _sender;
+   public Node Sender => _sender;
+}
 
-      bool success = false;
-      while(!success)
+
+
+public abstract class Node : MonoBehaviour
+{
+   public bool isFreeze;
+   public LensType TargetLens { get; }
+   public NodeSaveType nodeSaveType = NodeSaveType.None;
+
+   public abstract void Initialize();
+   public abstract void Dispose();
+
+   public NodePool _nodePool = null;
+   public NodeRegister _nodeRegister = null;
+
+   protected Node Instance => this;
+
+   public virtual void Receive(Node node) { }
+   public virtual void Receive(NodeSendData send) { }
+   public virtual void Receive(NodeSendObject send) { }
+   public virtual void Receive<T,S>((T data, S sender) data) 
+      where T : struct
+      where S : Node{ }
+
+
+
+   #region Normal&Pool Logic
+   public T MakeNode<T>(T prefab, Node parentNode = null, Transform parentTrm = null,
+      bool isPoolable = false, Action<T> Callback = null)
+      where T : Node
+   {
+      T result;
+
+      string typeName = typeof(T).ToString();
+      result = Instantiate(prefab, parentTrm);
+      Callback?.Invoke(result);
+      result.Initialize();
+
+      (result as IOwnable)?.SetParent(parentNode ?? this);
+
+      result.nodeSaveType = isPoolable ? NodeSaveType.Pool : NodeSaveType.None;
+
+      if (isPoolable && _nodePool is null)
+         _nodePool = new NodePool(this);
+
+      return result;
+   }
+
+   public T PopNode<T>(Node parentNode = null, Transform parentTrm = null) where T : Node
+   {
+      if (!_nodePool.Pop(parentNode, out T popResult))
+         Debug.LogError($@"ERROR :: In {gameObject.name}, 
+pool has no {typeof(T).ToString()} node. ");
+      return popResult;
+   }
+
+
+   public Node PopNode(Type t, Node parentNode = null, Transform parentTrm = null)
+   {
+      if (!_nodePool.Pop(parentNode, out Node popResult))
+         Debug.LogError($@"ERROR :: In {gameObject.name}, 
+pool has no {t.ToString()} node. ");
+      return popResult;
+   }
+   #endregion
+   #region Registe Logic
+   public T MakeRegiste<T>(T prefab, Node parentNode = null, Transform parentTrm = null, Action<Node> Callback = null)
+      where T : Node
+   {
+      T result;
+      result = Instantiate(prefab, parentTrm);
+      result.isFreeze = true;
+
+      Callback?.Invoke(result);
+
+      result.Initialize();
+      (result as IOwnable)?.SetParent(parentNode ?? this);
+
+      result.nodeSaveType = NodeSaveType.Register;
+
+      if (_nodeRegister is null)
+         _nodeRegister = new NodeRegister(this);
+
+      Registe(result);
+
+      return result;
+   }
+
+   public Node MakeRegiste(Node prefab, Type t, Node parentNode = null, Transform parentTrm = null, Action<Node> Callback = null)
+   {
+      Node result;
+      string typeName = t.ToString();
+      result = Instantiate(prefab, parentTrm);
+      result.isFreeze = true;
+
+      Callback?.Invoke(result);
+      result.Initialize();
+      (result as IOwnable)?.SetParent(parentNode ?? this);
+
+      result.nodeSaveType = NodeSaveType.Register;
+
+      if (_nodeRegister is null)
+         _nodeRegister = new NodeRegister(this);
+
+      Registe(result);
+
+      return result;
+   }
+
+   public void Registe(Node node)
+      => _nodeRegister.Registe(node);
+
+   public void DeRegiste(Node node)
+      => _nodeRegister.DeRegiste(node);
+   #endregion
+
+
+
+   public void ReturnNode(Node target)
+   {
+      switch (target.nodeSaveType)
       {
-         if(trm.parent.TryGetComponent<T>(out var component))
-         {
-            success = true;
-            result = component;
+         case NodeSaveType.None:
+            Destroy(target.gameObject);
             break;
-         }
 
-         if (trm == root) break;
+         case NodeSaveType.Pool:
+            _nodePool.Push(target);
+            break;
 
-         trm = transform.parent;
+         case NodeSaveType.Register:
+            _nodeRegister.Registe(target);
+            break;
       }
-      
-      return success;
    }
 
-   private void Send()
-      => _parent.Receive(this, _isActive);
+}
 
-   public virtual void SetActive(bool activeSelf)
+
+public abstract class OwnableNode<T> : Node, IOwnable
+   where T : Node
+{
+   protected T _parent;
+   public Node Parent { get => _parent; set => _parent = value as T; }
+
+   public virtual void SetParent(Node parent)
+      => Parent = parent;
+
+   protected void Send(NodeSendData data)
+      => _parent?.Receive(data);
+
+   protected void Send(NodeSendObject obj)
+      => _parent?.Receive(obj);
+
+   protected void Send()
+      => _parent?.Receive(this);
+
+   protected void Send<D,S>((D data, S Sender) send) 
+      where D : struct
+      where S : Node
+      => _parent?.Receive(send);
+}
+
+public static class ReceiveCastHelper
+{
+   public static void OnCastSuccess<D, T>(this NodeSendData data, Action<D> SuccessCallback)
+      where T : Node
+      where D : NodeSendData
    {
-      if (_isActive != activeSelf)
-      {
-         _isActive = activeSelf;
+      T castedNode = (data.Sender as T);
+      D castedData = (data as D);
 
-         if (_isActive)
-            TurnOn();
-         else
-            TurnOff();
-
-         Send();
-      }
+      if (castedNode is not null && castedData is not null)
+         SuccessCallback?.Invoke(castedData);
    }
 
-   protected virtual void Update()
-      => OnUpdateEvt?.Invoke();
+   public static void OnCastSuccess<D, T>(this NodeSendObject data, Action<D> SuccessCallback)
+   where T : Node
+   where D : NodeSendObject
+   {
+      T castedNode = (data.Sender as T);
+      D castedData = (data as D);
 
-   protected virtual void TurnOn() { }
-   protected virtual void TurnOff() { }
+      if (castedNode is not null && castedData is not null)
+         SuccessCallback?.Invoke(castedData);
+   }
 
-   public virtual void Receive<N>(N child, bool activeSelf)
-      where N : class, INode{}
+   public static void OnCastSuccess<D, S>(this (object data, object sender) send, Action<D> SuccessCallback)
+      where D : struct
+      where S : class
+   {
+      if ((send.sender as S is not null)
+         && send.data.GetType() == typeof(D))
+         SuccessCallback?.Invoke((D)send.data);
+   }
+
+
+   public static void OnCastSuccess<S>(this object sender, Action<S> SuccessCallback)
+      where S : class
+   {
+      if (sender as S is not null)
+         SuccessCallback?.Invoke(sender as S);
+   }
+
 }
