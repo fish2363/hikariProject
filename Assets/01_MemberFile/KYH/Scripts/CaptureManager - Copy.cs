@@ -20,8 +20,6 @@ public class CaptureManager : MonoBehaviour
     {
         Capture();
         MouseFollow();
-
-        print(inventoryIdx);
     }
 
     private void MouseFollow()
@@ -53,7 +51,7 @@ public class CaptureManager : MonoBehaviour
     {
         for (int i = 0; i < captureObject.Length; i++)
         {
-            if (inventoryIdx != 5)
+            if (inventoryIdx < 6)
             {
                 captureObject[i].GetComponent<CaptureObject>().CaptureFinish(inventoryIdx);
                 inventoryIdx++;
@@ -73,6 +71,6 @@ public class CaptureManager : MonoBehaviour
 
     private void OnDrawGizmos()
     {
-        Gizmos.DrawCube(gameObject.transform.position, captureSize);
+        Gizmos.DrawWireCube(gameObject.transform.position, captureSize);
     }
 }

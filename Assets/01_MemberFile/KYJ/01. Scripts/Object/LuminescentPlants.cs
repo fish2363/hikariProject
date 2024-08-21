@@ -10,6 +10,12 @@ public class LuminescentPlants : MonoBehaviour
     public bool isHold;
 
     public Action OnPlants;
+    private Rigidbody2D rigid;
+
+    private void Awake()
+    {
+        rigid = GetComponent<Rigidbody2D>();
+    }
 
     private void Update()
     {
@@ -29,13 +35,13 @@ public class LuminescentPlants : MonoBehaviour
         isReach = false;
     }
 
-
     private void HoldPlants(Transform parent)
     {
-        if (isReach == true && Input.GetKeyDown(KeyCode.K))
+        if (isReach == true && !isHold && Input.GetKeyDown(KeyCode.K))
         {
             gameObject.transform.SetParent(parent);
             isHold = true;
+            rigid.bodyType = RigidbodyType2D.Kinematic;
         }
 
         else if (isHold == true && Input.GetKeyDown(KeyCode.K))
@@ -47,7 +53,6 @@ public class LuminescentPlants : MonoBehaviour
         if (isHold == true)
         {
             OnPlants?.Invoke();
-            print("ddd");
         }
     }
 }

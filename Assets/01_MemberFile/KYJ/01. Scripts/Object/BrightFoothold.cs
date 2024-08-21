@@ -1,39 +1,45 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
 
 public class BrightFoothold : MonoBehaviour
 {
-    private SpriteRenderer sprite;
-    private BrightPlants plants;
-    public float brightStep;
+    [SerializeField]
+    private BrightPlants brightPlants;
 
-    private bool isReach;
+    public float brightnessLevel;
+
+    public Action OnBrightnessDetection;
+
+    private Animator anim;
+    private PolygonCollider2D polygonCollider;
+
 
     private void Awake()
     {
-        plants = GameObject.Find("Visual").GetComponent<BrightPlants>();
-        sprite = GameObject.Find("Square").GetComponent<SpriteRenderer>();
+        anim = GetComponentInChildren<Animator>();
+        polygonCollider = GetComponent<PolygonCollider2D>();
+        OnBrightnessDetection += BrightnessDetection;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void Update()
     {
-        if (collision.gameObject.CompareTag("Player"))
-        {
-            isReach = true;
-        }
+        OnBrightnessDetection?.Invoke();
     }
 
-    public void BrightStep()
+    public void BrightnessDetection()
     {
-        if (brightStep > plants.brightStep || plants.isOn == false)
+        if (brightnessLevel > brightPlants.brightStep || brightPlants.isReach == false)
         {
-            sprite.material.color = new Color(sprite.material.color.r, sprite.material.color.g, sprite.material.color.b, 0f);
+            polygonCollider.isTrigger = true;
+            anim.SetBool("Fold", true);
         }
 
-        if (brightStep <= plants.brightStep && plants.isOn == true)
+        if (brightnessLevel == brightPlants.brightStep && brightPlants.isReach == true)
         {
-            sprite.material.color = new Color(sprite.material.color.r, sprite.material.color.g, sprite.material.color.b, 1f);
+            polygonCollider.isTrigger = false;
+            anim.SetBool("Fold", false);
         }
     }
 }
