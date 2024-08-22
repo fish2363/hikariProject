@@ -18,6 +18,6 @@ public class PlaceItOBJ : MonoBehaviour
 
     private void OnParticleCollision(GameObject other)
     {
-        
+        Debug.Log("æ∆¿’ª–");
     }
 }
