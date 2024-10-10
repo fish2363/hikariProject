@@ -14,10 +14,10 @@ public class GameManager : MonoSingleton<GameManager>
     public bool isClearSea;
     public bool isCapture;
 
-   private void Awake()
-   {
-      IDOTweenInit dotweenInit = DOTween.Init(true, true, LogBehaviour.Verbose);
-      dotweenInit.SetCapacity(50, 50);
+    private void Awake()
+    {
+        /*IDOTweenInit dotweenInit = DOTween.Init(true, true, LogBehaviour.Verbose);
+        dotweenInit.SetCapacity(200, 200);*/
 
         if (Instance == null)
         {
@@ -28,7 +28,7 @@ public class GameManager : MonoSingleton<GameManager>
         {
             Destroy(gameObject);
         }
-   }
+    }
 
     private void Update()
     {

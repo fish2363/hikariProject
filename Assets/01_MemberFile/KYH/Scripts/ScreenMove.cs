@@ -38,6 +38,7 @@ public class ScreenMove : MonoBehaviour
         {
             if (app == IApp.Chrome)
             {
+                if (DOTween.TotalPlayingTweens() > 0) DOTween.KillAll();
                 QuestPopupUI.Instance.QuestTxt();
                 SoundManager.Instance.ChangeMainStageVolume("windowSceneBGM", true, ISOund.BGM);
                 GameManager.Instance.OnClickDown -= folderManager.ClickFolderInvoke;
@@ -45,6 +46,7 @@ public class ScreenMove : MonoBehaviour
             }
             if (app == IApp.PowerPoint)
             {
+                if (DOTween.TotalPlayingTweens() > 0) DOTween.KillAll();
                 QuestPopupUI.Instance.QuestTxt();
                 GameManager.Instance.OnClickDown -= folderManager.ClickFolderInvoke;
                 SceneManager.LoadScene("CaptureStage");

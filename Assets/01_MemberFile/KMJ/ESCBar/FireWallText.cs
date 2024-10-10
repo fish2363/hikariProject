@@ -20,7 +20,7 @@ public class FireWallText : MonoBehaviour
         _textSequence = DOTween.Sequence()
             .Append(_fireWallText.DOFade(0, 2))
             .AppendInterval(0.5f)
-            .Append(_fireWallText.DOFade(255, 2))
+            .Append(_fireWallText.DOFade(1, 2))
             .SetLoops(-1)
             .SetAutoKill(false);
     }
