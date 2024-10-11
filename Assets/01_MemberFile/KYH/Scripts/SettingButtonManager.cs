@@ -62,6 +62,14 @@ public class SettingButtonManager : MonoBehaviour
     {
         howControll.SetActive(true);
         folderManager.CancelButton();
+
+        //string filePath = Application.dataPath + "/GameControll.png";
+        //ProcessStartInfo startInfo = new ProcessStartInfo(filePath)
+        //{
+        //    UseShellExecute = true
+        //};
+        //Process.Start(startInfo);
+
         //string strPath = Application.dataPath + "/GameControll.png";
 
         //print(strPath);
