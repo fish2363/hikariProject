@@ -6,11 +6,14 @@ using UnityEngine.UI;
 public class WindowChange : MonoBehaviour
 {
     private RawImage rawImage;
+    public Texture2D defaultTexture;
 
     private void Awake()
     {
         rawImage = GetComponent<RawImage>();
         rawImage.texture = BGManager.Instance.GetPCWallpaper();
+        if (rawImage.texture == null)
+            rawImage.texture = defaultTexture;
     }
 
     private void Start()

@@ -13,7 +13,6 @@ public class PlayerDialogue : MonoBehaviour
             .Show("빨리 자료나 찾고 밖으로 나가자", 3.5f, true)
             .End();
 
-        QuestPopupUI.Instance.QuestTxt();
     }
 
     public void LuminescentPlantDialogue()
@@ -52,8 +51,8 @@ public class PlayerDialogue : MonoBehaviour
     {
         PlayerChatBoxManager.Instance
             .Show("이 꽃 드디어 찾았네", 4f, true)
-            .Show("이 꽃도 특정 밝기를 좋아한다고 했지", 4f, true)
-            .Show("( 왼쪽 밑에 있는 \"사전\"을 클릭해 정보를 확인할 수 있습니다 )", 5f, true)
+            .Show("( 왼쪽 밑에 있는 \"사전\"을 클릭해 정보를 확인할 수 있습니다 )", 4f, true)
+            .Show("(사전을 스크롤면 꽃의 종류를 볼 수 있습니다{꽃 종류 4개})", 5f, true)
             .Show("이정도면 과제에 넣을건 다 찾은것 같은데?", 5f, true)
             .Show("이제 출구만 찾으면 되겠어", 5f, true)
             .End();

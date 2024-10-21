@@ -22,17 +22,9 @@ public class QuestPopupUI : MonoBehaviour
         _questTxt.text = _questDialogue[0];
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.K))
-        {
-            QuestTxt();
-        }
-    }
-
     public void QuestTxt()
     {
-        _questTxt.text = _questDialogue[currentQuest];
         currentQuest++;
+        _questTxt.text = _questDialogue[currentQuest];
     }
 }
