@@ -50,8 +50,7 @@ public class PlayerChatBoxManager : MonoBehaviour
 
             Vector2 textSize = _text.GetRenderedValues(false);   //띄어쓰기도 포함된 (렌더링 된) 텍스트의 너비
             float x = textSize.x;
-            x -= (x / 2);
-            textSize.x = x;
+            textSize.x *= 0.5f;
 
             Vector2 offset;
 
@@ -71,10 +70,7 @@ public class PlayerChatBoxManager : MonoBehaviour
 
     public void End()
     {
-        DOVirtual.DelayedCall(textDelayCounter, () =>
-        {
-            Hide();
-        });
+        DOVirtual.DelayedCall(textDelayCounter, ()=> Hide());
         textDelayCounter = 0;
     }
 
@@ -99,6 +95,5 @@ public class PlayerChatBoxManager : MonoBehaviour
         textImage.gameObject.SetActive(false);
         isPutInTimer = false;
         currentTimer = 0f;
-        return;
     }
 }

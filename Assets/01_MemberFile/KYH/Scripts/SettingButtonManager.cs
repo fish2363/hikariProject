@@ -27,7 +27,7 @@ public class SettingButtonManager : MonoBehaviour
     public void InvokeApp()
     {
         descriptionPanel.SetActive(false);
-        GetType().GetMethod($"{currentAPP}App", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Invoke(this,null);
+        GetType().GetMethod($"{currentAPP}App", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Invoke(this/*스태틱인 경우 필요 없음*/,null);
         //GetType().GetMethod("currnetApp").Invoke(this, new object[] {3, 4 });
     }
 

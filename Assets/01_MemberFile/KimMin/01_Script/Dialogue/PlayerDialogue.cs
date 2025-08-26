@@ -6,7 +6,7 @@ public class PlayerDialogue : MonoBehaviour
 {
     public void StartDialogue()
     {
-        PlayerChatBoxManager.Instance
+        new PlayerChatBoxManager()
             .Show("으으 어지러워", 3f, true)
             .Show("여긴 어디지?", 3f, true)
             .Show("깊은 심해로 들어왔나봐..", 3f, true)

@@ -45,6 +45,12 @@ public static class TextExpand
         //TextUpDownMove(parameter, isStart);
     }
 
+    public static void KimYeonHoMethod(this TMP_Text text, float time)
+    {
+        
+    }
+
+
     private static IEnumerator TextUpDownMoveRoutine(TMP_Text text, float time, Color color , float fadeoutTime, TextStyle textStyle)
     {
         Vector3[] startVertices;

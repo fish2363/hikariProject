@@ -6,7 +6,7 @@ public class TestScropts : MonoBehaviour
 {
     private void Start()
     {
-        PlayerChatBoxManager.Instance
+        new PlayerChatBoxManager()
             .Show("1번째 텍스트", 3f,true)
             .Show("2번째 텍스트입니다!!!!!!!!", 3f,true)
             .Show("4번째 텍스트입니다!!!!!!!!", 3f, true)
